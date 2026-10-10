@@ -51,7 +51,10 @@
     --ls-label:.12em;
   }
   *{margin:0;padding:0;box-sizing:border-box}
-  html{scroll-behavior:smooth;scroll-padding-top:96px;background:var(--bg)} /* Native smooth scroll */
+  /* No scroll-behavior here: Lenis steps window.scrollTo every frame, and CSS
+     smooth-scrolling on top of that would animate each step over itself. The
+     anchor handler still passes behavior:'smooth' explicitly on the native path. */
+  html{scroll-padding-top:96px;background:var(--bg)}
   h1,h2,h3,h4,h5,h6{font-family:var(--font-display);font-weight:400;letter-spacing:-.01em;line-height:1.05;text-transform:uppercase}
   body{font-family:var(--font-body);background:transparent;color:var(--ink);line-height:1.6;overflow-x:hidden}
   img{max-width:100%;display:block}
@@ -106,7 +109,12 @@
   .nav-btn{padding:10px 22px;font-size:.72rem}
   .logo{font-size:23px;font-weight:800;letter-spacing:1px}
   .logo b{color:var(--green);font-weight:800}
-  .nav-links{grid-column:2;justify-self:center;display:flex;gap:20px;font-family:var(--font-ui);font-size:.72rem;font-weight:500;letter-spacing:var(--ls-label);text-transform:uppercase;white-space:nowrap}
+  /* Curved box around the menu: one pill shell in the site's glass language
+     (frosted white, light-catching edge, soft depth shadow). align-self keeps
+     the pill snug instead of stretching to the header's full height, and the
+     side padding gives the hover scale(1.18) room to grow without touching
+     the shell. Mobile's dropdown panel resets this back to a flat sheet. */
+  .nav-links{grid-column:2;justify-self:center;align-self:center;display:flex;align-items:center;gap:20px;font-family:var(--font-ui);font-size:.72rem;font-weight:500;letter-spacing:var(--ls-label);text-transform:uppercase;white-space:nowrap;padding:11px 26px;border:1px solid rgba(255,255,255,.9);border-radius:999px;background:rgba(255,255,255,.52);backdrop-filter:blur(16px) saturate(155%);-webkit-backdrop-filter:blur(16px) saturate(155%);box-shadow:0 16px 36px -20px rgba(14,16,22,.3),0 2px 8px rgba(14,16,22,.05),inset 0 1px 0 rgba(255,255,255,.95)}
   .nav-links a{color:var(--ink);position:relative;padding:6px 0;opacity:.55;transition:transform .35s cubic-bezier(.34,1.9,.64,1),opacity .3s,color .3s}.nav-links a:hover,.nav-links a:focus-visible{opacity:1;outline:none;transform:scale(1.18)}
   .nav-links a:hover,.nav-links a.on{color:var(--green-dark)}
   .nav-links a.on::after,.nav-links a::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--green);transform-origin:left;transform:scaleX(0)}.nav-links a.on{opacity:1}
@@ -143,6 +151,11 @@
   .hero-veil{position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.72) 0%,rgba(255,255,255,.84) 45%,rgba(255,255,255,.96) 100%);backdrop-filter:blur(7px) saturate(140%);-webkit-backdrop-filter:blur(7px) saturate(140%)}
   .hero-in{position:relative;z-index:1;width:100%;padding:170px 24px 40px;display:flex;flex-direction:column;align-items:center}
   .hero h1{font-size:var(--fs-hero);line-height:.92;letter-spacing:-.015em;margin:38px 0 8px}
+  /* Char-split entrance gate: units sit at opacity 0 from first paint so the
+     split text never flashes before the timeline starts. The class is only ever
+     added by the splitter, and the splitter only runs when GSAP exists - so no
+     GSAP / no JS / reduced motion all fall through to a plain visible heading. */
+  .js .hero h1.h1-split .tchar{opacity:0}
   /* Rotating word in the hero headline.
      - nowrap + a JS-measured min-width on .type-rot keep the headline from
        reflowing as words of different lengths cycle.
@@ -241,7 +254,7 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
   .a1{grid-column:1;grid-row:1/3}
   .a2{grid-column:2;grid-row:1/4;object-position:60% 45%}
   .a3{grid-column:1;grid-row:3/4}
-  .badge{position:absolute;left:34%;bottom:20px;width:132px;height:132px;background:var(--green);color:#121807;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:0 18px 40px rgba(14,16,22,.18)}
+  .badge{position:absolute;right:20px;left:auto;bottom:20px;width:132px;height:132px;background:var(--green);color:#121807;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:0 18px 40px rgba(14,16,22,.18)}
   .badge .ico{font-size:24px}
   .badge strong{font-size:31px;font-weight:800;line-height:1}
   .badge small{font-size:8.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;text-align:center;line-height:1.5;padding:0 10px}
@@ -279,9 +292,13 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
   .projects-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
   .proj{position:relative;overflow:hidden;aspect-ratio:4/3;cursor:pointer;border:1px solid rgba(255,255,255,.75);box-shadow:0 28px 60px -34px rgba(14,16,22,.55)}
   @property --ps{syntax:'<number>';inherits:false;initial-value:1}
-  /* written on .proj, read on .proj img -> must inherit. <length> so GSAP emits px. */
-  @property --py{syntax:'<length>';inherits:true;initial-value:0px}
-  .proj img{position:absolute;top:-11%;left:0;width:100%;height:122%;object-fit:cover;filter:grayscale(.55) brightness(.82);transform:translate3d(0,var(--py,0px),0) scale(var(--ps,1));transition:--ps .6s ease,filter .4s ease;will-change:transform}
+  /* Whole picture, aligned in its box: the card is 4:3 and every project image
+     is 4:3, so a centered contain fills the box edge to edge with no crop on any
+     side. The old 122%-tall cover existed only as slack for the per-card parallax
+     translate - that slack was what chopped roughly 18% off each image. With
+     exact 4:3 sources the fit reads full-bleed; only a future off-ratio asset
+     would show a sliver of letterbox, and the light border hides that. */
+  .proj img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;filter:grayscale(.55) brightness(.82);transform:scale(var(--ps,1));transition:--ps .6s ease,filter .4s ease;will-change:transform}
   .proj:hover img{--ps:1.08;filter:grayscale(0) brightness(.96)}
   .proj-cap h3{transition:transform .45s cubic-bezier(.2,.8,.2,1)}
   .proj:hover .proj-cap h3{transform:translateX(25px)}
@@ -321,13 +338,13 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
   .team-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:18px}
   .member{grid-column:span 2;background:var(--card);border:1px solid var(--line);padding:28px 20px 24px;text-align:center;transition:.35s;display:flex;flex-direction:column}
   .member:hover{border-color:var(--green);transform:translateY(-5px)}
-  .member .avatar{width:74px;height:74px;margin:0 auto 16px;font-size:24px}
+  .member .avatar{width:128px;height:128px;margin:0 auto 16px;font-size:36px}
   .member img.avatar{display:block;object-fit:cover;object-position:center top}
-  /* Aqib's portrait frames the head small, so his name reads as a dot in the circle.
-     The 74px circle is kept (the row must stay even) and the bitmap is scaled inside
-     it instead: the wrapper clips, transform-origin pins the scale to his face. */
+  /* Every portrait shows its whole photo — square source in a square box means
+     nothing is sliced; the av-zoom wrapper stays only so all five cards share
+     one markup shape. */
   .member .avatar.av-zoom{overflow:hidden}
-  .member .av-zoom img{width:100%;height:100%;object-fit:cover;object-position:center top;transform:scale(1.45);transform-origin:55% 45%}
+  .member .av-zoom img{width:100%;height:100%;object-fit:cover;object-position:center}
   .member h4{font-size:14.5px;margin-bottom:5px;letter-spacing:.06em;word-spacing:.14em;line-height:1.3}
   .member .role{display:block;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--green-dark);font-weight:700;margin-bottom:12px}
   .member p{font-size:11.5px;color:var(--mut);margin-bottom:18px}
@@ -378,7 +395,7 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
   .foot-grid h4{font-size:16px;margin-bottom:22px;position:relative;padding-bottom:12px}
   .foot-grid h4::after{content:"";position:absolute;left:0;bottom:0;width:30px;height:2px;background:var(--green)}
   .foot-logo{display:block;position:relative;transition:transform .3s}
-  .foot-logo img{height:76px;width:auto}
+  .foot-logo img{height:58px;width:auto}
   .foot-logo:hover{transform:translateY(-3px)}
   .foot-about p{font-size:12.5px;color:var(--mut);margin:18px 0 22px}
   .foot-links li{margin-bottom:11px}
@@ -440,14 +457,15 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
   /* ---------- services for brands ---------- */
   .ps{padding:68px 0 64px;background:var(--bg2-a);border-top:1px solid var(--line)}
   .ps .section-head h2{font-size:clamp(22px,3vw,32px)}
-  .ps-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
-  .ps-card{position:relative;background:var(--card);border:1px solid var(--line);padding:34px 26px 74px;transition:.35s}
+  .ps .section-head{margin-bottom:64px}
+  .ps-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:28px}
+  .ps-card{position:relative;background:var(--card);border:1px solid var(--line);padding:36px 26px;display:flex;flex-direction:column;justify-content:center;text-align:center;transition:.35s}
   .ps-card:hover{border-color:var(--green);transform:translateY(-6px)}
-  .ps-ico{width:58px;height:58px;border:1px solid var(--line);display:grid;place-items:center;color:var(--green);margin-bottom:20px;transition:.35s}
+  .ps-ico{width:58px;height:58px;border:1px solid var(--line);display:grid;place-items:center;color:var(--green);margin:0 auto 22px;transition:.35s}
   .ps-card:hover .ps-ico{border-color:var(--green);background:rgba(242,106,27,.1)}
   .ps-ico .ico{font-size:24px}
-  .ps-cat{display:block;font-size:9.5px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:var(--mut);margin-bottom:9px}
-  .ps-card h3{font-size:17px;line-height:1.35;margin-bottom:10px;letter-spacing:.06em;word-spacing:.14em}
+  .ps-cat{display:block;font-size:9.5px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:var(--mut);margin-bottom:12px}
+  .ps-card h3{font-size:17px;line-height:1.35;margin-bottom:14px;letter-spacing:.06em;word-spacing:.14em}
   .ps-card p{font-size:12.5px;color:var(--mut)}
   .ps-arrow{position:absolute;left:26px;bottom:24px;width:40px;height:40px;border:1px solid var(--line);display:grid;place-items:center;color:var(--green);transition:.3s}
   .ps-arrow:hover{background:var(--green);border-color:var(--green);color:#121807}
@@ -529,7 +547,7 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
     .testi-grid,.team-grid{grid-template-columns:repeat(6,1fr)}
     .testi-grid .tcard{grid-column:span 3}
     .team-grid .member:nth-child(4),.team-grid .member:nth-child(5){grid-column:span 3}
-    .nav-links{gap:14px;font-size:10.5px;letter-spacing:1px}
+    .nav-links{gap:14px;font-size:10.5px;letter-spacing:1px;padding:9px 18px}
     .ps-grid{grid-template-columns:1fr 1fr}
     .aboutb-grid{gap:44px}
     .foot-grid{grid-template-columns:1fr 1fr}
@@ -538,7 +556,7 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
     /* grid-column/justify-self from the base rule would otherwise apply to the
        abs-positioned panel too (Chrome places it in the zero-width auto track and
        shrink-wraps to ~108px), so reset both to make left/right:0 span the header. */
-    .nav-links{position:absolute;top:100%;left:0;right:0;grid-column:1/-1;justify-self:stretch;background:rgba(255,255,255,.78);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);flex-direction:column;padding:18px 24px 26px;gap:16px;border-top:1px solid rgba(255,255,255,.9);border-bottom:1px solid rgba(14,16,22,.1);box-shadow:0 18px 36px -20px rgba(14,16,22,.25);display:none}
+    .nav-links{position:absolute;top:100%;left:0;right:0;grid-column:1/-1;justify-self:stretch;background:rgba(255,255,255,.78);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);flex-direction:column;padding:18px 24px 26px;gap:16px;border-top:1px solid rgba(255,255,255,.9);border-bottom:1px solid rgba(14,16,22,.1);border-left:0;border-right:0;border-radius:0;align-items:stretch;box-shadow:0 18px 36px -20px rgba(14,16,22,.25);display:none}
     .nav-links.open{display:flex}
     .burger{display:block}
     /* card frost off on small screens: ~50 blur passes belong on desktop GPUs */
@@ -553,6 +571,7 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
   }
   @media(max-width:640px){
     .nav-logo img{height:40px}
+    .foot-logo img{height:40px}
     .stats-in{grid-template-columns:1fr 1fr;gap:34px}
     .ps-grid{grid-template-columns:1fr}
     .astats{grid-template-columns:1fr}
@@ -565,7 +584,7 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
     .services-head,.services-cta{grid-column:1/-1}
     /* centred with a margin, not translateX(-50%): .badge is now an .rv, and GSAP owns
        its transform through the reveal, so a centreing transform here would be dropped. */
-    .badge{width:110px;height:110px;left:50%;margin-left:-55px}
+    .badge{width:110px;height:110px;left:50%;right:auto;margin-left:-55px}
     .foot-grid{grid-template-columns:1fr;gap:38px}
   }
   @media(max-width:460px){
@@ -603,6 +622,128 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
   .btn,.burger,.filters button,.proj,.nav-logo,.foot-logo{cursor:url("assets/cursor-link.png") 5 1, pointer}
   .logo{cursor:url("assets/cursor-default.png") 3 1, default}
   input,textarea,select{cursor:url("assets/cursor-text.png") 6 10, text}
+
+  /* ============================================================
+     NEUMORPHISM — Meet Our Team
+     Glass is swapped for soft-UI: one flat matte surface, every
+     box defined only by the classic light (top-left) / dark
+     (bottom-right) shadow pair, and cards press INTO the surface
+     on hover instead of lifting. The orange rotating ring is
+     dropped here — neumorphism reads on shadow alone.
+     Sits before the accordion block so the photo panels can opt
+     out of the card shadows (they live in a raised tray instead:
+     a shadow chasing the 600ms flex animation is the one thing
+     that measurably dropped frames).
+     ============================================================ */
+  .team{background:#e8e9ed;position:relative;z-index:0}
+  .team .member,.team .tach{
+    background:#e8e9ed;border:0;
+    backdrop-filter:none;-webkit-backdrop-filter:none;
+    box-shadow:10px 10px 22px rgba(158,170,192,.48),-9px -9px 20px rgba(255,255,255,.92)
+  }
+  .team .member::before,.team .tach::before{content:none}
+  .team .member:hover,.team .tach:hover{
+    transform:none;
+    box-shadow:inset 8px 8px 16px rgba(150,163,186,.65),inset -8px -8px 16px rgba(255,255,255,.95)
+  }
+  /* avatar = a raised coin on the card (accordion sets it back to none) */
+  .team .member .avatar{
+    box-shadow:6px 6px 14px rgba(158,170,192,.5),-6px -6px 14px rgba(255,255,255,.92)
+  }
+
+  /* ---------- team: horizontal accordion (Dribbble shot 26019503) ----------
+     Desktop with a fine pointer: the row becomes tall photo panels — the hovered
+     panel widens while its siblings compress, and its caption fades up over the
+     photo (the first panel stands open until the row is hovered). Panels show
+     the WHOLE portrait (object-fit:contain, no face-slicing) letterboxed over a
+     pre-blurred copy of the same photo — baked as tiny JPEGs rather than CSS
+     blur so the flex animation re-paints an image instead of re-filtering.
+     Everything under 1024px, touch devices, and reduced-motion keep the glass
+     cards with always-visible bios, so no content depends on hover. */
+  @media (min-width:1024px) and (hover:hover) and (pointer:fine){
+    .team-grid{display:flex;gap:14px;position:relative}
+    /* raised tray the photo pills sit in — static while the row animates, so
+       its shadow rasterizes once instead of re-blurring every frame */
+    .team-grid::before{
+      content:"";position:absolute;inset:-18px -16px;z-index:-1;
+      border-radius:62px;background:#e8e9ed;
+      box-shadow:12px 12px 26px rgba(158,170,192,.48),-10px -10px 22px rgba(255,255,255,.92)
+    }
+    .team-grid .member{
+      /* box height, not picture scale, is what changed: collapsed photos are
+         width-bound (they stay exactly the same size), so shrinking the box
+         only removes empty blur around them — the photo never zooms */
+      flex:1 1 0;min-width:0;height:360px;padding:0;border:0;
+      background-color:#e7e7e9;background-repeat:no-repeat;
+      background-position:center;background-size:cover;
+      border-radius:44px;overflow:hidden;
+      /* photo fills the panel, so the inherited glass blur would be pure cost:
+         it re-blurs the changing region on every frame of the flex animation.
+         The drop shadow goes too — its re-raster per animation frame was the
+         entire measured cost of the exchange (53ms hitch + dropped frames;
+         shadow-free runs flatline at the idle 13.3ms), and the source shot
+         has no shadows anyway. */
+      backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none;
+      transition:flex .6s cubic-bezier(.3,.9,.25,1)
+    }
+    .team-grid .member:nth-child(1){background-image:url("assets/team/kashif-blur.jpg")}
+    .team-grid .member:nth-child(2){background-image:url("assets/team/zulqarnain-blur.jpg")}
+    .team-grid .member:nth-child(3){background-image:url("assets/team/aqib-blur.jpg")}
+    .team-grid .member:nth-child(4){background-image:url("assets/team/nouman-blur.jpg")}
+    .team-grid .member:nth-child(5){background-image:url("assets/team/mohsin-blur.jpg")}
+    .team-grid .member::before{content:none}            /* no rotating ring on photos */
+    .team-grid .member:hover{transform:none;box-shadow:none}   /* no card lift / press on panels */
+    .team-grid .member .avatar,.team-grid .member .av-zoom{
+      position:absolute;inset:0;width:100%;height:100%;margin:0;border-radius:0;
+      background:none;             /* letterbox areas must show the panel's blur fill */
+      box-shadow:none              /* full-panel photo: no coin, no card shadow */
+    }
+    /* whole photo, letterboxed over the blurred fill — no zoom transforms, so
+       nothing is cropped at rest or on hover */
+    .team-grid .member img.avatar,.team-grid .member .av-zoom img{
+      width:100%;height:100%;object-fit:contain;object-position:center
+    }
+    .team-grid .member::after{
+      content:"";position:absolute;inset:0;z-index:1;pointer-events:none;opacity:0;
+      transition:opacity .45s ease;
+      background:linear-gradient(to top,rgba(10,12,14,.85),rgba(10,12,14,.38) 38%,rgba(10,12,14,0) 66%)
+    }
+    .team-grid .member .m-info{
+      position:absolute;left:0;right:0;bottom:0;z-index:2;padding:24px 20px 28px;
+      text-align:center;opacity:0;transform:translateY(18px);
+      transition:opacity .45s ease,transform .55s cubic-bezier(.2,.8,.2,1)
+    }
+    .team-grid .member h4{font-size:16.5px;color:#fff;margin-bottom:6px;text-shadow:0 2px 14px rgba(0,0,0,.5)}
+    .team-grid .member .role{color:#ffb98a;margin-bottom:9px;text-shadow:0 1px 10px rgba(0,0,0,.45)}
+    .team-grid .member p{color:rgba(255,255,255,.92);font-size:12px;line-height:1.55;
+      margin:0 auto;max-width:320px;text-shadow:0 1px 10px rgba(0,0,0,.45)}
+    /* the exchange — equal specificity, later rule wins: first panel open at
+       rest, hovering the row closes it, hovering a panel opens that one */
+    .team-grid .member:first-child{flex:3.4 1 0}
+    .team-grid:hover .member{flex:1 1 0}
+    .team-grid .member:hover{flex:3.4 1 0}
+    .team-grid .member:first-child::after,.team-grid .member:first-child .m-info{opacity:1;transform:none}
+    .team-grid:hover .member::after,.team-grid:hover .member .m-info{opacity:0;transform:translateY(18px)}
+    .team-grid .member:hover::after,.team-grid .member:hover .m-info{opacity:1;transform:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .team-grid .member,.team-grid .member img.avatar,.team-grid .member .av-zoom img,
+    .team-grid .member::after,.team-grid .member .m-info{transition-duration:.01ms}
+  }
+
+  /* ---------- Meet Our Team on a phone: hero-style stack ----------
+     Arranged like the hero: one centered column of full-width elements running
+     down the page, with airier gaps than the desktop grid's 18px so each card
+     reads as its own block (hero rhythm: ~26px between stacked elements).
+     The achievements row stops being a 2-up grid and joins the same single
+     column. Neumorphic skin untouched - this block only re-arranges. */
+  @media(max-width:640px){
+    .team .section-head .eyebrow{margin-bottom:18px}
+    .team .section-head p{margin-top:20px}
+    .team-grid{gap:26px}
+    .team-grid .member{padding:30px 22px 28px}
+    .team-ach{grid-template-columns:1fr;gap:26px}
+  }
 </style>
 </head>
 <body>
@@ -742,21 +883,6 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
       <h3>UI / UX</h3>
       <p>Interface and experience design, from first wireframe to shipped component library.</p>
     </div>
-
-    <div class="services-cta rv">
-      <h3>Ready to Start <span class="green">Your Project?</span></h3>
-      <a class="link-arrow" href="#contact">Get in touch <svg class="ico"><use href="#i-send"/></svg></a>
-    </div>
-  </div>
-</section>
-
-<!-- ============ STATS ============ -->
-<section class="stats" aria-label="Our numbers">
-  <div class="container stats-in">
-    <div class="stat rv"><strong>530+</strong><span>Happy Clients</span></div>
-    <div class="stat rv"><strong>120+</strong><span>Projects Completed</span></div>
-    <div class="stat rv"><strong>3</strong><span>Years Experience</span></div>
-    <div class="stat rv"><strong>98%</strong><span>Satisfaction Rate</span></div>
   </div>
 </section>
 
@@ -765,7 +891,7 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
   <div class="container about-grid">
     <div class="collage rv">
       <img class="a1" src="assets/about-1.jpg" alt="Training session in progress at the Digitify office" loading="lazy">
-      <img class="a2" src="assets/about-2.jpg" alt="Instructor presenting a client website to the team" loading="lazy">
+      <img class="a2" src="assets/about-2.jpg" alt="Team lead presenting from his desk in the Digitify meeting room" loading="lazy">
       <img class="a3" src="assets/about-3.jpg" alt="Engaged team members listening during a workshop" loading="lazy">
       <div class="badge rv">
         <svg class="ico"><use href="#i-user"/></svg>
@@ -775,7 +901,7 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
     </div>
     <div class="about-copy rv">
       <h2>We Don't Just Build<br>Brands, <span class="green">We Grow Them.</span></h2>
-      <p>At Digitify, we blend creativity with strategy. Based in Islamabad, our team of experts is dedicated to pushing the boundaries of digital innovation. We don't follow trends; we set them.</p>
+      <p>At Digitify, we blend creativity with strategy. Our team of experts is dedicated to pushing the boundaries of digital innovation. We don't follow trends; we set them.</p>
       <ul class="checks">
         <li><svg class="ico"><use href="#i-check"/></svg> Award-winning Design</li>
         <li><svg class="ico"><use href="#i-check"/></svg> Dedicated Support Team</li>
@@ -806,7 +932,7 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
 <section id="about" class="about-b">
   <div class="container aboutb-grid">
     <div class="aboutb-copy rv">
-      <h2>Strategy, Creativity,<br><span class="green">Results.</span></h2>
+      <h2>Strategy, Creativity, <span class="green">Results.</span></h2>
       <p>We're a team of strategists, designers, and developers who believe in the power of purposeful digital experiences. Every brand has a story. We help you tell yours in a way that connects, converts, and lasts.</p>
       <div class="astats">
         <div class="rv"><strong>6+</strong><span>Years in Market</span></div>
@@ -815,11 +941,7 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
       </div>
     </div>
     <div class="aboutb-visual rv">
-      <img src="assets/section-image.jpg" alt="Digitify team training session presented at headquarters in Islamabad" loading="lazy">
-      <div class="glass rv">
-        <h4>Islamabad, PK</h4>
-        <p>Headquarters Location</p>
-      </div>
+      <img src="assets/section-image.jpg" alt="Digitify team training session presented at headquarters" loading="lazy">
     </div>
   </div>
 </section>
@@ -840,30 +962,30 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
     </div>
 
     <div class="projects-grid">
-      <a class="proj rv" href="https://saeed-riaz-website-iota.vercel.app/" target="_blank" rel="noopener noreferrer" data-plx="0.04" data-plx-var="--py" data-plx-max="26" data-cat="web">
+      <a class="proj rv" href="https://saeed-riaz-website-iota.vercel.app/" target="_blank" rel="noopener noreferrer" data-cat="web">
         <span class="proj-view">View</span>
         <img src="assets/proj-saeed.jpg" alt="Saeed ur Riaz coaching website" loading="lazy">
         <div class="proj-cap"><h3>Saeed ur Riaz</h3><p>Web Design</p><p class="desc">A coaching site for an executive mentor and happiness coach with a free clarity call.</p></div>
       </a>
-      <a class="proj rv" href="https://alivetravelsco.com/" target="_blank" rel="noopener noreferrer" data-plx="0.04" data-plx-var="--py" data-plx-max="26" data-cat="seo">
+      <a class="proj rv" href="https://alivetravelsco.com/" target="_blank" rel="noopener noreferrer" data-cat="web">
         <span class="proj-view">View</span>
-        <img src="assets/proj-alive-seo.jpg" alt="Alive Travel search performance in Google Search Console" loading="lazy">
-        <div class="proj-cap"><h3>Alive Travel</h3><p>SEO</p><p class="desc">Search performance for alivetravelsco.com. 1.48K impressions and a 7.4% CTR in three months.</p></div>
+        <img src="assets/proj-alive.jpg" alt="Alive Travel website" loading="lazy">
+        <div class="proj-cap"><h3>Alive Travel</h3><p>Web Design</p><p class="desc">A travel booking site for group tours, air tickets, and visa services.</p></div>
       </a>
-      <a class="proj rv" href="https://alivetravelsco.com/" target="_blank" rel="noopener noreferrer" data-plx="0.04" data-plx-var="--py" data-plx-max="26" data-cat="branding">
+      <a class="proj rv" href="https://alivetravelsco.com/" target="_blank" rel="noopener noreferrer" data-cat="branding">
         <span class="proj-view">View</span>
         <img src="assets/proj-alive-brand.jpg" alt="Alive Travels and Tours logo" loading="lazy">
         <div class="proj-cap"><h3>Alive Travel</h3><p>Branding</p><p class="desc">Logo and visual identity for a group tours, air tickets and visa services brand.</p></div>
       </a>
-      <a class="proj rv" href="https://elumera-storefront.vercel.app/" target="_blank" rel="noopener noreferrer" data-plx="0.04" data-plx-var="--py" data-plx-max="26" data-cat="ecommerce">
+      <a class="proj rv" href="https://elumera-storefront.vercel.app/" target="_blank" rel="noopener noreferrer" data-cat="ecommerce">
         <span class="proj-view">View</span>
         <img src="assets/proj-elumara.jpg" alt="Elumara Smart Food Warming Mat product page" loading="lazy">
         <div class="proj-cap"><h3>Elumara Smart Food Warming Mat</h3><p>eCommerce</p><p class="desc">An online store for a smart food warming mat. 11 heat levels and a 10-hour timer.</p></div>
       </a>
-      <a class="proj rv" href="https://alivetravelsco.com/" target="_blank" rel="noopener noreferrer" data-plx="0.04" data-plx-var="--py" data-plx-max="26" data-cat="web">
+      <a class="proj rv" href="https://alivetravelsco.com/" target="_blank" rel="noopener noreferrer" data-cat="seo">
         <span class="proj-view">View</span>
-        <img src="assets/proj-alive.jpg" alt="Alive Travel website" loading="lazy">
-        <div class="proj-cap"><h3>Alive Travel</h3><p>Web Design</p><p class="desc">A travel booking site for group tours, air tickets, and visa services.</p></div>
+        <img src="assets/proj-alive-seo.jpg" alt="Alive Travel search performance in Google Search Console" loading="lazy">
+        <div class="proj-cap"><h3>Alive Travel</h3><p>SEO</p><p class="desc">Search performance for alivetravelsco.com. 1.48K impressions and a 7.4% CTR in three months.</p></div>
       </a>
     </div>
   </div>
@@ -938,28 +1060,24 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
         <span class="ps-cat">Performance Marketing</span>
         <h3>Performance Marketing</h3>
         <p>Turn underperforming ad campaigns into reliable revenue generators with data-driven strategies.</p>
-        <a class="ps-arrow" href="#contact" aria-label="Talk to us about Performance Marketing"><svg class="ico"><use href="#i-send"/></svg></a>
       </article>
       <article class="ps-card rv">
         <div class="ps-ico"><svg class="ico"><use href="#l-star"/></svg></div>
         <span class="ps-cat">Branding</span>
         <h3>Brand Identity</h3>
         <p>Create a memorable brand identity that builds trust and leaves a lasting impression.</p>
-        <a class="ps-arrow" href="#contact" aria-label="Talk to us about Brand Identity"><svg class="ico"><use href="#i-send"/></svg></a>
       </article>
       <article class="ps-card rv">
         <div class="ps-ico"><svg class="ico"><use href="#i-device"/></svg></div>
         <span class="ps-cat">Production</span>
         <h3>Visual Production</h3>
         <p>Premium photos, videos, and animations that captivate audiences.</p>
-        <a class="ps-arrow" href="#contact" aria-label="Talk to us about Visual Production"><svg class="ico"><use href="#i-send"/></svg></a>
       </article>
       <article class="ps-card rv">
         <div class="ps-ico"><svg class="ico"><use href="#i-pen"/></svg></div>
         <span class="ps-cat">Content Creation</span>
         <h3>Content Strategy</h3>
         <p>Develop engaging content that drives meaningful customer interactions.</p>
-        <a class="ps-arrow" href="#contact" aria-label="Talk to us about Content Strategy"><svg class="ico"><use href="#i-send"/></svg></a>
       </article>
     </div>
   </div>
@@ -991,42 +1109,45 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
 
     <div class="team-grid">
       <article class="member rv">
-        <img class="avatar" src="assets/team/kashif.jpg" alt="Muhammad Kashif" width="74" height="74" loading="lazy">
+        <img class="avatar" src="assets/team/kashif.jpg" srcset="assets/team/kashif.jpg 240w, assets/team/kashif@2x.jpg 480w" sizes="(max-width:1023px) 128px, 420px" alt="Muhammad Kashif" width="128" height="128" loading="lazy">
+        <div class="m-info">
         <h4>Muhammad Kashif</h4>
         <span class="role">Founder &amp; CEO</span>
         <p>Visionary entrepreneur helping businesses scale through digital marketing, branding, and business growth strategies.</p>
+        </div>
       </article>
       <article class="member rv">
-        <img class="avatar" src="assets/team/zulqarnain.jpg" alt="Zulqarnain Zameer" width="74" height="74" loading="lazy">
+        <img class="avatar" src="assets/team/zulqarnain.jpg" srcset="assets/team/zulqarnain.jpg 240w, assets/team/zulqarnain@2x.jpg 480w" sizes="(max-width:1023px) 128px, 420px" alt="Zulqarnain Zameer" width="128" height="128" loading="lazy">
+        <div class="m-info">
         <h4>Zulqarnain Zameer</h4>
         <span class="role">Senior Designer</span>
         <p>Leads branding, UI/UX design, visual storytelling, and creative campaigns that leave lasting impressions.</p>
+        </div>
       </article>
       <article class="member rv">
-        <span class="avatar av-zoom"><img src="assets/team/aqib.jpg" alt="Aqib Ali" width="74" height="74" loading="lazy"></span>
+        <span class="avatar av-zoom"><img src="assets/team/aqib.jpg" srcset="assets/team/aqib.jpg 240w, assets/team/aqib@2x.jpg 480w" sizes="(max-width:1023px) 128px, 420px" alt="Aqib Ali" width="128" height="128" loading="lazy"></span>
+        <div class="m-info">
         <h4>Aqib Ali</h4>
         <span class="role">Project Leader</span>
         <p>Expert in technical SEO, keyword research, content marketing, and organic business growth.</p>
+        </div>
       </article>
       <article class="member rv">
-        <img class="avatar" src="assets/team/nouman.jpg" alt="Muhammad Nouman" width="74" height="74" loading="lazy">
+        <img class="avatar" src="assets/team/nouman.jpg" srcset="assets/team/nouman.jpg 240w, assets/team/nouman@2x.jpg 480w" sizes="(max-width:1023px) 128px, 420px" alt="Muhammad Nouman" width="128" height="128" loading="lazy">
+        <div class="m-info">
         <h4>Muhammad Nouman</h4>
         <span class="role">Social Media Manager</span>
         <p>Creates engaging social media strategies, viral content, and audience-focused campaigns across all major platforms.</p>
+        </div>
       </article>
       <article class="member rv">
-        <img class="avatar" src="assets/team/mohsin.jpg" alt="Muhammad Mohsin" width="74" height="74" loading="lazy">
+        <img class="avatar" src="assets/team/mohsin.jpg" srcset="assets/team/mohsin.jpg 240w, assets/team/mohsin@2x.jpg 480w" sizes="(max-width:1023px) 128px, 420px" alt="Muhammad Mohsin" width="128" height="128" loading="lazy">
+        <div class="m-info">
         <h4>Muhammad Mohsin</h4>
         <span class="role">Web Developer</span>
         <p>Builds high-performance websites, landing pages, and conversion-focused digital experiences for modern brands.</p>
+        </div>
       </article>
-    </div>
-
-    <div class="team-ach">
-      <div class="tach rv"><svg class="ico"><use href="#i-user"/></svg><strong>25+</strong><h5>Marketing Experts</h5><p>Certified Industry Professionals</p></div>
-      <div class="tach rv"><svg class="ico"><use href="#i-growth"/></svg><strong>500+</strong><h5>Projects Completed</h5><p>Successful Marketing Campaigns</p></div>
-      <div class="tach rv"><svg class="ico"><use href="#i-spark"/></svg><strong>300+</strong><h5>Happy Clients</h5><p>Businesses Served Worldwide</p></div>
-      <div class="tach rv"><svg class="ico"><use href="#l-star"/></svg><strong>8+</strong><h5>Years of Experience</h5><p>Delivering Digital Growth</p></div>
     </div>
   </div>
 </section>
@@ -1114,16 +1235,47 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
 
 <!-- Motion libs vendored locally (assets/vendor/): the reveal system hides content
      until GSAP runs, so these are render-critical and a CDN stall would leave the
-     page frozen mid-load. three.js stays on the CDN on purpose: it is a deferred
-     decorative import with a silent fallback. -->
+     page frozen mid-load. Lenis is local for the same reason - it drives the
+     scroll of every page interaction. three.js stays on the CDN on purpose: it is
+     a deferred decorative import with a silent fallback. -->
 <script src="assets/vendor/gsap.min.js"></script>
 <script src="assets/vendor/ScrollTrigger.min.js"></script>
+<script src="assets/vendor/lenis.min.js"></script>
 
 <script>
   gsap.registerPlugin(ScrollTrigger);
 
-// ---- smooth scrolling (native) ----
-  // route in-page anchor links through native scrollTo
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---- smooth scrolling (Lenis, restored) ----
+  // Config is the requested one: duration 1.6, ease t*(2-t), wheel + touch
+  // smoothing, both multipliers at 1. smoothTouch was renamed syncTouch in
+  // Lenis 1.x - same option, new name.
+  // One driver only: the reference snippet ran lenis.raf from BOTH a manual
+  // requestAnimationFrame loop and gsap.ticker, which steps Lenis twice per
+  // frame (and it is a large part of what stuttered last time). gsap.ticker is
+  // the single driver here with lagSmoothing(0), and the scroll listener flushes
+  // ScrollTrigger's cached positions so parallax/reveals see the new scrollY in
+  // the same frame.
+  // Native scroll stays wired underneath: missing lib or reduced motion falls
+  // back to window.scrollTo and nothing else changes.
+  let lenis = null;
+  if (window.Lenis && !reduced) {
+    lenis = new window.Lenis({
+      duration: 1.6,
+      easing: (t) => t * (2 - t),
+      smoothWheel: true,
+      syncTouch: true,
+      wheelMultiplier: 1,
+      touchMultiplier: 1
+    });
+    lenis.on('scroll', () => ScrollTrigger.update());
+    // guarded: if Lenis is ever destroyed the ticker must not throw every frame
+    gsap.ticker.add((time) => { if (lenis) lenis.raf(time * 1000); });
+    gsap.ticker.lagSmoothing(0);
+  }
+
+  // route in-page anchor links through Lenis when it is driving, else native smooth
   document.querySelectorAll('a[href^="#"]').forEach(a => {
     a.addEventListener('click', e => {
       const id = a.getAttribute('href');
@@ -1131,13 +1283,16 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
       const t = document.querySelector(id);
       if (!t) return;
       e.preventDefault();
-      window.scrollTo({ top: t.getBoundingClientRect().top + window.scrollY - 8, behavior: 'smooth' });
+      const top = t.getBoundingClientRect().top + window.scrollY - 8;
+      if (lenis) lenis.scrollTo(top);
+      else window.scrollTo({ top, behavior: 'smooth' });
     });
   });
 
-  // ---- scroll velocity (native) ----
-  // Replaces Lenis.velocity for the kinetic text. Pure scrollY delta per frame,
-  // normalized to 60fps so a 120Hz screen produces the same skew as a 60Hz one.
+  // ---- scroll velocity ----
+  // Lenis drives real window scroll (every frame fires a native scroll event),
+  // so this stays a pure scrollY delta per frame, normalized to 60fps so a
+  // 120Hz screen produces the same skew as a 60Hz one.
   // dt<200ms guard drops the spike from a backgrounded tab resuming.
   const vel = { current: 0, lastY: window.scrollY, lastT: performance.now() };
   (function trackVel() {
@@ -1178,7 +1333,83 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
     setTimeout(() => m.textContent = '', 5000);
   });
 
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // ---- hero title: depth-typewriter entrance ----
+  // The reference used GSAP's SplitText; this site ships only gsap +
+  // ScrollTrigger, so the split is hand-rolled: TEXT nodes become
+  // <span class="tchar"> units (spaces stay plain text so word-wrap is
+  // untouched), .type-rot joins as ONE element unit at its place in the line -
+  // it is the live rotator below and must never be split internally - and
+  // .sr-only is left alone. Per unit: flies in from z-500 through blur+dark,
+  // then the reference's little y:-20 hop and the bounce landing.
+  // aria-label keeps the heading reading as one sentence, not 31 glyphs.
+  if (window.gsap && !reduced) {
+    const title = document.querySelector('.hero h1');
+    if (title) {
+      const units = [];
+      [...title.childNodes].forEach(node => {
+        if (node.nodeType === Node.TEXT_NODE) {
+          const frag = document.createDocumentFragment();
+          for (const ch of node.textContent) {
+            if (!ch.trim()) { frag.appendChild(document.createTextNode(ch)); continue; }
+            const s = document.createElement('span');
+            s.className = 'tchar';
+            s.textContent = ch;
+            frag.appendChild(s);
+            units.push(s);
+          }
+          node.replaceWith(frag);
+        } else if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains('type-rot')) {
+          node.classList.add('tchar');
+          units.push(node);
+        }
+      });
+      title.setAttribute('aria-label', 'Elevate Your Brand Amplify Your Growth');
+      title.classList.add('h1-split');
+
+      units.forEach((u, i) => {
+        gsap.timeline()
+          .fromTo(u,
+            { z: -500, rotationY: 90, rotationX: -45, transformOrigin: 'left center',
+              filter: 'blur(20px) brightness(0)', opacity: 0, scale: 0.1,
+              transformPerspective: 620 },
+            { z: 0, rotationY: 0, rotationX: 0, filter: 'blur(0px) brightness(1)',
+              opacity: 1, scale: 1, duration: 0.6, ease: 'power2.out' },
+            i * 0.08)
+          .to(u, { y: -20, duration: 0.3, ease: 'power2.out' }, i * 0.08 + 0.3)
+          .to(u, { y: 0, duration: 0.3, ease: 'bounce.out' }, i * 0.08 + 0.6);
+      });
+    }
+  }
+
+  // ---- count-up on the stat figures ----
+  // The countUp('.counterup', 1800ms linear) call from the reference, mapped
+  // onto this site's real counters: the stats strip, the about grid and the
+  // team achievements. Suffixes (+, %) survive because only the digits are
+  // animated. Testimonial names and the contact block (phone/address) live
+  // under different selectors and a non-numeric match is refused anyway.
+  // Reduced motion and missing GSAP both leave the static markup alone.
+  if (window.gsap && !reduced) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((en) => {
+        if (!en.isIntersecting) return;
+        io.unobserve(en.target);
+        const el = en.target;
+        const m = el.textContent.trim().match(/^(\d+(?:\.\d+)?)(.*)$/);
+        if (!m) return;
+        const target = parseFloat(m[1]);
+        const suffix = m[2];
+        const dec = (m[1].split('.')[1] || '').length;
+        const o = { v: 0 };
+        el.textContent = (0).toFixed(dec) + suffix;
+        gsap.to(o, {
+          v: target, duration: 1.8, ease: 'none',
+          onUpdate: () => { el.textContent = o.v.toFixed(dec) + suffix; }
+        });
+      });
+    }, { threshold: 0.5 });
+    document.querySelectorAll('.stat strong, .astats strong, .tach strong')
+      .forEach((el) => io.observe(el));
+  }
 
   // ---- rotating typewriter: hero line 2 cycles through the words slowly ----
   // Written as a rAF-driven, time-based loop rather than stacked setTimeouts.
@@ -1287,7 +1518,8 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
       });
     };
 
-    setTimeout(cycle, 620);          // let the hero land before it starts
+    setTimeout(cycle, 3400);          // let the char entrance land first (31 units
+                                      // x 80ms + 0.9s settle ≈ 3.3s), as before just later
   })();
 
   // ---- motion: reveal + parallax on ScrollTrigger ----
