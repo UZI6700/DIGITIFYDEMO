@@ -320,7 +320,7 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
   .testi{padding:68px 0 64px;background:var(--bg2-a)}
   .testi .section-head{max-width:none}
   .testi .section-head h2{white-space:nowrap;text-align:center;font-size:clamp(22px,3vw,32px)}
-  .testi-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:22px}
+  .testi-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:32px}
   .tcard{grid-column:span 2;background:var(--card);border:1px solid var(--line);padding:28px 24px;transition:.35s;display:flex;flex-direction:column}
   .tcard:hover{border-color:var(--green);transform:translateY(-5px)}
   .stars{color:var(--green);letter-spacing:3px;font-size:13px;margin-bottom:14px}
@@ -641,6 +641,48 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
     .team-grid .member:hover img{filter:none}
   }
 
+  /* ---------- team: profile modal ----------
+     Clicking a card (or Enter/Space on it) opens a spotlight dialog with the
+     member's photo, bio, stats, expertise and contact links. Prev/next buttons
+     and the arrow keys walk the team, Esc or the backdrop closes it. */
+  .team-grid .member{cursor:pointer}
+  .team-grid .member:focus-visible{outline:3px solid var(--green);outline-offset:3px}
+  .tm-more{position:absolute;top:14px;right:14px;z-index:2;width:34px;height:34px;border-radius:50%;background:var(--green);display:grid;place-items:center;opacity:0;transform:scale(.6);transition:opacity .3s ease,transform .3s ease}
+  .team-grid .member:hover .tm-more,.team-grid .member:focus-visible .tm-more{opacity:1;transform:scale(1)}
+  .tm-more svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2.4}
+
+  .tmodal{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+  .tmodal.open{display:flex}
+  .tmodal-bd{position:absolute;inset:0;background:rgba(15,15,18,.65);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);animation:tfade .25s ease;cursor:url("assets/cursor-link.png") 5 1, pointer}
+  .tmodal-dl{position:relative;width:min(920px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:26px;display:grid;grid-template-columns:340px 1fr;box-shadow:0 40px 80px -20px rgba(0,0,0,.5);animation:tpop .3s cubic-bezier(.2,.9,.3,1.2)}
+  .tmodal-photo{position:relative;min-height:100%;background:linear-gradient(160deg,#8a8a8f,#55555a);display:grid;place-items:center;overflow:hidden}
+  .tmodal-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 22%}
+  .tmodal-body{padding:44px 44px 36px}
+  .tmodal-role{font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--green-dark)}
+  .tmodal-name{font-family:var(--font-display);font-weight:400;font-size:clamp(28px,4.5vw,40px);text-transform:uppercase;margin:8px 0 14px;line-height:1.05;color:var(--ink)}
+  .tmodal-bio{line-height:1.7;color:var(--mut);font-size:15.5px}
+  .tstats{display:flex;gap:28px;margin:24px 0;padding:18px 0;border-block:1px solid var(--line)}
+  .tstats strong{display:block;font-family:var(--font-display);font-weight:400;font-size:28px;color:var(--ink)}
+  .tstats small{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.08em}
+  .tmodal-body h4{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);margin-bottom:10px}
+  .ttags{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 24px;padding:0;list-style:none}
+  .ttags li{background:rgba(255,255,255,.7);border:1px solid var(--line);padding:7px 14px;border-radius:99px;font-size:13px;font-weight:500;color:var(--ink)}
+  .tmodal-close,.tmodal-nav{position:absolute;border:0;display:grid;place-items:center;transition:.2s}
+  .tmodal-close{top:16px;right:16px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.95);box-shadow:0 4px 12px rgba(0,0,0,.2);z-index:3;color:var(--ink)}
+  .tmodal-close:hover{background:var(--green);color:#fff}
+  .tmodal-nav{bottom:20px;width:40px;height:40px;border-radius:50%;background:#f1f1f4;right:20px;color:var(--ink)}
+  .tmodal-nav.prev{right:68px}
+  .tmodal-nav:hover{background:var(--ink);color:#fff}
+  .tmodal svg.ti{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.2}
+  body.tlock{overflow:hidden}
+  @media(max-width:760px){
+    .tmodal-dl{grid-template-columns:1fr}
+    .tmodal-photo{height:320px}
+    .tmodal-body{padding:28px 24px}
+    .tstats{gap:20px}
+  }
+  @keyframes tfade{from{opacity:0}}
+  @keyframes tpop{from{opacity:0;transform:translateY(24px) scale(.96)}}
 
 </style>
 </head>
@@ -1006,24 +1048,29 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
     </div>
 
     <div class="team-grid">
-      <article class="member rv">
+      <article class="member rv" role="button" tabindex="0" aria-label="View profile of Muhammad Kashif, Founder &amp; CEO">
         <img src="assets/team/kashif.jpg" srcset="assets/team/kashif.jpg 240w, assets/team/kashif@2x.jpg 480w" sizes="(max-width:940px) 60vw, 216px" alt="Muhammad Kashif" loading="lazy">
+        <span class="tm-more" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M8 7h9v9"/></svg></span>
         <div class="tm-label"><strong>Muhammad Kashif</strong><span>Founder &amp; CEO</span></div>
       </article>
-      <article class="member rv">
+      <article class="member rv" role="button" tabindex="0" aria-label="View profile of Zulqarnain Zameer, Senior Designer">
         <img src="assets/team/zulqarnain.jpg" srcset="assets/team/zulqarnain.jpg 240w, assets/team/zulqarnain@2x.jpg 480w" sizes="(max-width:940px) 60vw, 216px" alt="Zulqarnain Zameer" loading="lazy">
+        <span class="tm-more" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M8 7h9v9"/></svg></span>
         <div class="tm-label"><strong>Zulqarnain Zameer</strong><span>Senior Designer</span></div>
       </article>
-      <article class="member rv">
+      <article class="member rv" role="button" tabindex="0" aria-label="View profile of Aqib Ali, Project Leader">
         <img src="assets/team/aqib.jpg" srcset="assets/team/aqib.jpg 240w, assets/team/aqib@2x.jpg 480w" sizes="(max-width:940px) 60vw, 216px" alt="Aqib Ali" loading="lazy">
+        <span class="tm-more" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M8 7h9v9"/></svg></span>
         <div class="tm-label"><strong>Aqib Ali</strong><span>Project Leader</span></div>
       </article>
-      <article class="member rv">
+      <article class="member rv" role="button" tabindex="0" aria-label="View profile of Muhammad Nouman, Social Media Manager">
         <img src="assets/team/nouman.jpg" srcset="assets/team/nouman.jpg 240w, assets/team/nouman@2x.jpg 480w" sizes="(max-width:940px) 60vw, 216px" alt="Muhammad Nouman" loading="lazy">
+        <span class="tm-more" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M8 7h9v9"/></svg></span>
         <div class="tm-label"><strong>Muhammad Nouman</strong><span>Social Media Manager</span></div>
       </article>
-      <article class="member rv">
+      <article class="member rv" role="button" tabindex="0" aria-label="View profile of Muhammad Mohsin, Web Developer">
         <img src="assets/team/mohsin.jpg" srcset="assets/team/mohsin.jpg 240w, assets/team/mohsin@2x.jpg 480w" sizes="(max-width:940px) 60vw, 216px" alt="Muhammad Mohsin" loading="lazy">
+        <span class="tm-more" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M8 7h9v9"/></svg></span>
         <div class="tm-label"><strong>Muhammad Mohsin</strong><span>Web Developer</span></div>
       </article>
     </div>
@@ -1110,6 +1157,27 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
 </footer>
 
 </div><!-- /.page -->
+
+<!-- ============ TEAM PROFILE MODAL ============ -->
+<div class="tmodal" id="tmodal" role="dialog" aria-modal="true" aria-labelledby="tmName" aria-hidden="true">
+  <div class="tmodal-bd" data-close></div>
+  <div class="tmodal-dl">
+    <button class="tmodal-close" data-close aria-label="Close profile">
+      <svg class="ti" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <div class="tmodal-photo" id="tmPhoto"></div>
+    <div class="tmodal-body">
+      <p class="tmodal-role" id="tmRole"></p>
+      <h3 class="tmodal-name" id="tmName"></h3>
+      <p class="tmodal-bio" id="tmBio"></p>
+      <div class="tstats" id="tmStats"></div>
+      <h4>Expertise</h4>
+      <ul class="ttags" id="tmTags"></ul>
+    </div>
+    <button class="tmodal-nav prev" id="tmPrev" aria-label="Previous team member"><svg class="ti" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <button class="tmodal-nav" id="tmNext" aria-label="Next team member"><svg class="ti" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+  </div>
+</div>
 
 <!-- Motion libs vendored locally (assets/vendor/): the reveal system hides content
      until GSAP runs, so these are render-critical and a CDN stall would leave the
@@ -1627,6 +1695,7 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
       const count = Math.min(MAX_PARTICLES, Math.round((w * h / 100000) * PER_100K_PX));
       const pos = new Float32Array(count * 3);
       const col = new Float32Array(count * 3);
+      const seed = new Float32Array(count);   // per-sparkle tilt + twinkle phase
       // Mono-orange field. Two tones of the same hue rather than one flat colour:
       // a single tone reads as a wash, while a spread from deep to bright gives
       // the depth cue that keeps it looking like a field rather than a texture.
@@ -1638,6 +1707,7 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
         pos[i * 3 + 0] = (Math.random() - 0.5) * w * 1.6;
         pos[i * 3 + 1] = (Math.random() - 0.5) * h * 1.6;
         pos[i * 3 + 2] = -Math.random() * DEPTH;
+        seed[i] = Math.random();
 
         // Weighted toward the brand green: it is the only hue on the page, so a
         // few bright highlights plus a long tail of deep points keeps it in-palette.
@@ -1658,17 +1728,56 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
       const geo = new THREE.BufferGeometry();
       geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
       geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+      geo.setAttribute('aSeed', new THREE.BufferAttribute(seed, 1));
 
-      points = new THREE.Points(geo, new THREE.PointsMaterial({
-        size: Math.max(1.6, Math.min(2.6, w / 620)),
-        sizeAttenuation: true,
-        vertexColors: true,
+      // Sparkles, not square sprites: THREE.Points' default material paints a hard
+      // quad per particle, so the field read as scattered boxes. This tiny shader
+      // draws each point as a four-point sparkle — an astroid-shaped star, sharp
+      // arms along the axes and concave between them — with a soft core, a random
+      // static tilt per particle, and a gentle size/brightness twinkle so the
+      // background glimmers. Still one draw call: no textures, no postprocessing.
+      points = new THREE.Points(geo, new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: 0 },
+          uSize: { value: Math.max(2.2, Math.min(3.4, w / 480)) },
+          uScale: { value: renderer.domElement.height * 0.5 }
+        },
+        vertexShader: `
+          attribute float aSeed;
+          attribute vec3 aColor;
+          uniform float uTime, uSize, uScale;
+          varying vec3 vColor;
+          varying float vSeed;
+          void main() {
+            vColor = aColor;
+            vSeed = aSeed;
+            vec4 mv = modelViewMatrix * vec4(position, 1.0);
+            float tw = 1.0 + 0.16 * sin(uTime * (0.6 + aSeed * 1.4) + aSeed * 43.0);
+            gl_PointSize = uSize * tw * (uScale / -mv.z);
+            gl_Position = projectionMatrix * mv;
+          }`,
+        fragmentShader: `
+          uniform float uTime;
+          varying vec3 vColor;
+          varying float vSeed;
+          void main() {
+            vec2 p = gl_PointCoord * 2.0 - 1.0;
+            float a = vSeed * 6.2831853;
+            float c = cos(a), s = sin(a);
+            p = mat2(c, -s, s, c) * p;
+            float d = sqrt(abs(p.x)) + sqrt(abs(p.y));   // 1.0 on the star's outline
+            float star = 1.0 - smoothstep(0.78, 1.0, d);
+            float core = exp(-dot(p, p) * 4.5);
+            float tw = 0.68 + 0.32 * sin(uTime * (0.6 + vSeed * 1.4) + vSeed * 43.0);
+            float alpha = max(star, core * 0.85) * tw;
+            if (alpha < 0.012) discard;
+            gl_FragColor = vec4(vColor + vColor * core * 0.6, alpha);
+          }`,
         transparent: true,
-        opacity: 0.85,
         depthWrite: false,
         // Additive blending let overlapping specks sum toward white even though every
-        // vertex was green. Normal blending keeps the sum at the source colour, so the
-        // field can never accumulate into a white point.
+        // particle is orange. Normal blending keeps the sum at the source colour, so
+        // the field can never accumulate into a white point.
         blending: THREE.NormalBlending
       }));
       scene.add(points);
@@ -1696,6 +1805,8 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
       camera.updateProjectionMatrix();
       renderer.setPixelRatio(dpr);
       renderer.setSize(w, h, false);
+      // point sprites scale against half the drawing-buffer height
+      points.material.uniforms.uScale.value = renderer.domElement.height * 0.5;
     }
 
     function frame() {
@@ -1716,6 +1827,7 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
       points.position.z = -s * 22;
       camera.position.z = 90 + s * 10;
 
+      points.material.uniforms.uTime.value = performance.now() * 0.001;
       renderer.render(scene, camera);
     }
 
@@ -1766,6 +1878,82 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
     } else {
       addEventListener('load', () => setTimeout(load, 400), { once: true });
     }
+  })();
+
+  // ---- team profile modal ----
+  // Cards open a spotlight dialog: photo + bio + stats + expertise.
+  // The dialog swaps members in place (prev/next buttons, arrow keys, Esc), so
+  // the page never navigates. Lenis is stopped while it is open or the wheel
+  // would scroll the page behind the dialog.
+  const teamProfiles = [
+    { name: 'Muhammad Kashif', role: 'Founder & CEO', photo: 'assets/team/kashif@2x.jpg',
+      bio: "Muhammad leads the agency's vision and strategy, helping brands turn ideas into measurable growth. He oversees client partnerships and keeps every campaign aligned with business goals.",
+      stats: [['10+', 'Years Experience'], ['200+', 'Projects'], ['50+', 'Brands']],
+      skills: ['Brand Strategy', 'Business Growth', 'Leadership', 'Client Relations'] },
+    { name: 'Zulqarnain Zameer', role: 'Senior Designer', photo: 'assets/team/zulqarnain@2x.jpg',
+      bio: 'Zulqarnain crafts visual identities and campaign creatives that stand out and convert. From logos to full brand systems, his work blends clean aesthetics with clear communication.',
+      stats: [['7+', 'Years Experience'], ['300+', 'Designs'], ['40+', 'Brands']],
+      skills: ['Brand Identity', 'Ad Creatives', 'UI Design', 'Photoshop & Illustrator'] },
+    { name: 'Aqib Ali', role: 'Project Leader', photo: 'assets/team/aqib@2x.jpg',
+      bio: 'Aqib keeps projects on track from kickoff to launch. He coordinates designers, developers and marketers so every deliverable ships on time and exceeds expectations.',
+      stats: [['8+', 'Years Experience'], ['150+', 'Projects Led'], ['98%', 'On-time Delivery']],
+      skills: ['Project Management', 'Team Coordination', 'Client Communication', 'Workflow Planning'] },
+    { name: 'Muhammad Nouman', role: 'Social Media Manager', photo: 'assets/team/nouman@2x.jpg',
+      bio: 'Nouman builds and runs social media strategies that grow communities and drive leads. He manages content calendars, paid campaigns and audience engagement across platforms.',
+      stats: [['5+', 'Years Experience'], ['80+', 'Accounts Managed'], ['1M+', 'Reach Generated']],
+      skills: ['Social Strategy', 'Meta Ads', 'Content Planning', 'Community Management'] },
+    { name: 'Muhammad Mohsin', role: 'Web Developer', photo: 'assets/team/mohsin@2x.jpg',
+      bio: 'Mohsin develops fast, responsive websites and landing pages built to convert visitors into customers. He focuses on clean code, performance and a smooth user experience.',
+      stats: [['5+', 'Years Experience'], ['120+', 'Websites'], ['100%', 'Responsive']],
+      skills: ['WordPress', 'HTML / CSS / JS', 'Landing Pages', 'Site Speed & SEO'] }
+  ];
+  (function teamModal() {
+    const modal = document.getElementById('tmodal');
+    const cards = document.querySelectorAll('.team-grid .member');
+    if (!modal || !cards.length) return;
+    const q = sel => modal.querySelector(sel);
+    let current = 0, lastFocus = null;
+
+    function fill(i) {
+      const m = teamProfiles[i];
+      q('#tmPhoto').innerHTML = `<img src="${m.photo}" alt="${m.name}">`;
+      q('#tmRole').textContent = m.role;
+      q('#tmName').textContent = m.name;
+      q('#tmBio').textContent = m.bio;
+      q('#tmStats').innerHTML = m.stats.map(s => `<div><strong>${s[0]}</strong><small>${s[1]}</small></div>`).join('');
+      q('#tmTags').innerHTML = m.skills.map(s => `<li>${s}</li>`).join('');
+    }
+    function open(i) {
+      lastFocus = document.activeElement;
+      current = i; fill(i);
+      modal.classList.add('open'); modal.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('tlock');
+      if (lenis) lenis.stop();
+      q('.tmodal-close').focus();
+    }
+    function close() {
+      modal.classList.remove('open'); modal.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('tlock');
+      if (lenis) lenis.start();
+      if (lastFocus) lastFocus.focus();
+    }
+    const step = d => { current = (current + d + teamProfiles.length) % teamProfiles.length; fill(current); };
+
+    cards.forEach((card, i) => {
+      card.addEventListener('click', () => open(i));
+      card.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(i); }
+      });
+    });
+    modal.addEventListener('click', e => { if (e.target.closest('[data-close]')) close(); });
+    q('#tmPrev').addEventListener('click', () => step(-1));
+    q('#tmNext').addEventListener('click', () => step(1));
+    document.addEventListener('keydown', e => {
+      if (!modal.classList.contains('open')) return;
+      if (e.key === 'Escape') close();
+      else if (e.key === 'ArrowLeft') step(-1);
+      else if (e.key === 'ArrowRight') step(1);
+    });
   })();
 
   document.getElementById('yr').textContent = new Date().getFullYear();
