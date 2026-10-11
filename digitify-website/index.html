@@ -254,10 +254,10 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
   .a1{grid-column:1;grid-row:1/3}
   .a2{grid-column:2;grid-row:1/4;object-position:60% 45%}
   .a3{grid-column:1;grid-row:3/4}
-  .badge{position:absolute;right:20px;left:auto;bottom:20px;width:132px;height:132px;background:var(--green);color:#121807;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:0 18px 40px rgba(14,16,22,.18)}
-  .badge .ico{font-size:24px}
-  .badge strong{font-size:31px;font-weight:800;line-height:1}
-  .badge small{font-size:8.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;text-align:center;line-height:1.5;padding:0 10px}
+  .badge{position:absolute;right:20px;left:auto;bottom:20px;width:106px;height:106px;background:var(--green);color:#121807;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;box-shadow:0 12px 28px rgba(14,16,22,.18)}
+  .badge .ico{font-size:19px}
+  .badge strong{font-size:24px;font-weight:800;line-height:1}
+  .badge small{font-size:7.5px;font-weight:800;letter-spacing:1.1px;text-transform:uppercase;text-align:center;line-height:1.5;padding:0 8px}
   /* tighter vertical rhythm across both about copy blocks */
   .about-copy .eyebrow,.aboutb-copy .eyebrow{margin-bottom:10px}
   .about-copy h2{font-size:32px;line-height:1.3;margin-bottom:14px}
@@ -439,7 +439,7 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
   .astats strong{display:block;font-size:28px;font-weight:800;color:var(--green);line-height:1.2}
   .astats span{font-size:9.5px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--mut)}
   .aboutb-visual{position:relative}
-  .aboutb-visual img{width:100%;height:360px;object-fit:cover;border:1px solid rgba(255,255,255,.85);box-shadow:0 30px 60px -30px rgba(14,16,22,.45)}
+  .aboutb-visual img{width:100%;height:360px;object-fit:cover;object-position:50% 35%;border:1px solid rgba(255,255,255,.85);box-shadow:0 30px 60px -30px rgba(14,16,22,.45)}
   .glass{position:absolute;left:22px;bottom:22px;background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.95);backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);box-shadow:0 24px 50px -24px rgba(14,16,22,.4);padding:16px 22px}
   .glass h4{font-size:16px;}
   .glass p{font-size:10.5px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--green-dark)}
@@ -584,7 +584,7 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
     .services-head,.services-cta{grid-column:1/-1}
     /* centred with a margin, not translateX(-50%): .badge is now an .rv, and GSAP owns
        its transform through the reveal, so a centreing transform here would be dropped. */
-    .badge{width:110px;height:110px;left:50%;right:auto;margin-left:-55px}
+    .badge{width:88px;height:88px;left:50%;right:auto;margin-left:-44px}
     .foot-grid{grid-template-columns:1fr;gap:38px}
   }
   @media(max-width:460px){
@@ -833,7 +833,7 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
     <h2>300+ Projects<br><span class="green">Successfully Delivered</span></h2>
     <p>Every project represents a unique success story built through creativity, strategy, and innovation.</p>
     <figure class="ach-fig rv">
-      <img class="ach-img" src="assets/achievements.jpg" alt="Digitify achievements and awards" width="1400" height="933" loading="lazy">
+      <img class="ach-img" src="assets/achievements.jpg" alt="300+ projects successfully delivered infographic" width="1536" height="1024" loading="lazy">
     </figure>
   </div>
 </section>
@@ -936,12 +936,12 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
       <p>We're a team of strategists, designers, and developers who believe in the power of purposeful digital experiences. Every brand has a story. We help you tell yours in a way that connects, converts, and lasts.</p>
       <div class="astats">
         <div class="rv"><strong>6+</strong><span>Years in Market</span></div>
-        <div class="rv"><strong>80+</strong><span>Brands Served</span></div>
+        <div class="rv"><strong>10+</strong><span>Brands Served</span></div>
         <div class="rv"><strong>98%</strong><span>Client Retention</span></div>
       </div>
     </div>
     <div class="aboutb-visual rv">
-      <img src="assets/section-image.jpg" alt="Digitify team training session presented at headquarters" loading="lazy">
+      <img src="assets/section-image.jpg" alt="Digitify team training session with the founder presenting on screen" loading="lazy">
     </div>
   </div>
 </section>
@@ -1017,27 +1017,27 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
       <article class="tcard rv">
         <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
         <p>"Digitify completely transformed our online presence. Their attention to detail and strategic approach is unmatched in the industry."</p>
-        <div class="who"><img class="avatar" src="assets/testi/michael.jpg" alt="Michael R." width="42" height="42" loading="lazy"><div><strong>Michael R.</strong><small>CEO, TechFlow</small></div></div>
+        <div class="who"><img class="avatar" src="assets/testi/michael.jpg" alt="Hassan" width="42" height="42" loading="lazy"><div><strong>Hassan</strong><small>Business Owner</small></div></div>
       </article>
       <article class="tcard rv">
         <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
         <p>"The team delivered exactly what we needed. Professional, creative, and results-driven. Highly recommend for any digital project."</p>
-        <div class="who"><img class="avatar" src="assets/testi/sarah.jpg" alt="Sarah L." width="42" height="42" loading="lazy"><div><strong>Sarah L.</strong><small>Founder, Bloom Beauty</small></div></div>
+        <div class="who"><img class="avatar" src="assets/testi/sarah.jpg" alt="Sara Naveed" width="42" height="42" loading="lazy"><div><strong>Sara Naveed</strong><small>Small Business Founder</small></div></div>
       </article>
       <article class="tcard rv">
         <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
         <p>"Working with Digitify was a game-changer. Our conversion rates doubled within the first month of launching the new site."</p>
-        <div class="who"><img class="avatar" src="assets/testi/david.jpg" alt="David K." width="42" height="42" loading="lazy"><div><strong>David K.</strong><small>CMO, FinanceHub</small></div></div>
+        <div class="who"><img class="avatar" src="assets/testi/david.jpg" alt="Abdullah Khyani" width="42" height="42" loading="lazy"><div><strong>Abdullah Khyani</strong><small>E-commerce Business Owner</small></div></div>
       </article>
       <article class="tcard rv">
         <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
         <p>"Our online store revenue increased by 150% after Digitify redesigned the entire customer journey. Truly outstanding work."</p>
-        <div class="who"><img class="avatar" src="assets/testi/james.jpg" alt="James T." width="42" height="42" loading="lazy"><div><strong>James T.</strong><small>Director, ShopWave</small></div></div>
+        <div class="who"><img class="avatar" src="assets/testi/james.jpg" alt="Amjed M." width="42" height="42" loading="lazy"><div><strong>Amjed M.</strong><small>Startup Founder</small></div></div>
       </article>
       <article class="tcard rv">
         <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
         <p>"Professional, responsive, and incredibly skilled. Digitify helped us launch our SaaS platform ahead of schedule with a flawless design."</p>
-        <div class="who"><img class="avatar" src="assets/testi/emily.jpg" alt="Emily W." width="42" height="42" loading="lazy"><div><strong>Emily W.</strong><small>CTO, CloudNest</small></div></div>
+        <div class="who"><img class="avatar" src="assets/testi/emily.jpg" alt="Nimra Ali" width="42" height="42" loading="lazy"><div><strong>Nimra Ali</strong><small>Local Business Owner</small></div></div>
       </article>
 
     </div>
