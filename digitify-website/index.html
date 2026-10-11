@@ -335,20 +335,20 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
   /* ---------- team ---------- */
   .team{padding:68px 0 64px;background:var(--bg-a)}
   .team .section-head h2{font-size:clamp(22px,3vw,32px)}
-  .team-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:18px}
-  .member{grid-column:span 2;background:var(--card);border:1px solid var(--line);padding:28px 20px 24px;text-align:center;transition:.35s;display:flex;flex-direction:column}
-  .member:hover{border-color:var(--green);transform:translateY(-5px)}
-  .member .avatar{width:128px;height:128px;margin:0 auto 16px;font-size:36px}
-  .member img.avatar{display:block;object-fit:cover;object-position:center top}
-  /* Every portrait shows its whole photo — square source in a square box means
-     nothing is sliced; the av-zoom wrapper stays only so all five cards share
-     one markup shape. */
-  .member .avatar.av-zoom{overflow:hidden}
-  .member .av-zoom img{width:100%;height:100%;object-fit:cover;object-position:center}
-  .member h4{font-size:14.5px;margin-bottom:5px;letter-spacing:.06em;word-spacing:.14em;line-height:1.3}
-  .member .role{display:block;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--green-dark);font-weight:700;margin-bottom:12px}
-  .member p{font-size:11.5px;color:var(--mut);margin-bottom:18px}
-  .member .socials{justify-content:center;margin-top:auto}
+  /* ---------- team: portrait card strip (Dribbble shot 27143928, Untitled UI) --
+     Tall photo cards in a row: the picture fills the card edge to edge, and the
+     name + role sit in white over a soft gradient at the bottom-left. Cards rest
+     in grayscale; the hovered card lifts, scales and returns to full colour. */
+  .team-grid{display:flex;gap:18px;align-items:stretch}
+  .team-grid .member{flex:1 1 0;min-width:0;position:relative;padding:0;border:0;background:#dfe1e6;aspect-ratio:216/318;border-radius:var(--r);overflow:hidden;box-shadow:0 18px 40px -22px rgba(14,16,22,.35);backdrop-filter:none;-webkit-backdrop-filter:none;transition:transform .45s cubic-bezier(.2,.7,.3,1),box-shadow .45s ease}
+  .team-grid .member::before{content:none}
+  .team-grid .member img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 28%;filter:grayscale(1) contrast(1.03);transition:filter .5s ease}
+  .team-grid .member::after{content:"";position:absolute;left:0;right:0;bottom:0;height:44%;z-index:1;pointer-events:none;background:linear-gradient(to top,rgba(8,10,14,.68),rgba(8,10,14,0))}
+  .team-grid .tm-label{position:absolute;left:16px;right:16px;bottom:14px;z-index:2;text-align:left;color:#fff}
+  .team-grid .tm-label strong{display:block;font-size:13.5px;font-weight:700;letter-spacing:.03em;text-shadow:0 2px 12px rgba(0,0,0,.45)}
+  .team-grid .tm-label span{display:block;font-size:10.5px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.82);margin-top:3px;text-shadow:0 1px 8px rgba(0,0,0,.4)}
+  .team-grid .member:hover{transform:translateY(-10px) scale(1.045);box-shadow:0 32px 60px -26px rgba(14,16,22,.55)}
+  .team-grid .member:hover img{filter:grayscale(0) contrast(1)}
 
   /* ---------- contact ---------- */
   .contact{padding:68px 0 110px;background:var(--bg2-a)}
@@ -623,127 +623,25 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
   .logo{cursor:url("assets/cursor-default.png") 3 1, default}
   input,textarea,select{cursor:url("assets/cursor-text.png") 6 10, text}
 
-  /* ============================================================
-     NEUMORPHISM — Meet Our Team
-     Glass is swapped for soft-UI: one flat matte surface, every
-     box defined only by the classic light (top-left) / dark
-     (bottom-right) shadow pair, and cards press INTO the surface
-     on hover instead of lifting. The orange rotating ring is
-     dropped here — neumorphism reads on shadow alone.
-     Sits before the accordion block so the photo panels can opt
-     out of the card shadows (they live in a raised tray instead:
-     a shadow chasing the 600ms flex animation is the one thing
-     that measurably dropped frames).
-     ============================================================ */
+  /* Team section shell: the light gray canvas the photo strip sits on. */
   .team{background:#e8e9ed;position:relative;z-index:0}
-  .team .member,.team .tach{
-    background:#e8e9ed;border:0;
-    backdrop-filter:none;-webkit-backdrop-filter:none;
-    box-shadow:10px 10px 22px rgba(158,170,192,.48),-9px -9px 20px rgba(255,255,255,.92)
-  }
-  .team .member::before,.team .tach::before{content:none}
-  .team .member:hover,.team .tach:hover{
-    transform:none;
-    box-shadow:inset 8px 8px 16px rgba(150,163,186,.65),inset -8px -8px 16px rgba(255,255,255,.95)
-  }
-  /* avatar = a raised coin on the card (accordion sets it back to none) */
-  .team .member .avatar{
-    box-shadow:6px 6px 14px rgba(158,170,192,.5),-6px -6px 14px rgba(255,255,255,.92)
-  }
 
-  /* ---------- team: horizontal accordion (Dribbble shot 26019503) ----------
-     Desktop with a fine pointer: the row becomes tall photo panels — the hovered
-     panel widens while its siblings compress, and its caption fades up over the
-     photo (the first panel stands open until the row is hovered). Panels show
-     the WHOLE portrait (object-fit:contain, no face-slicing) letterboxed over a
-     pre-blurred copy of the same photo — baked as tiny JPEGs rather than CSS
-     blur so the flex animation re-paints an image instead of re-filtering.
-     Everything under 1024px, touch devices, and reduced-motion keep the glass
-     cards with always-visible bios, so no content depends on hover. */
-  @media (min-width:1024px) and (hover:hover) and (pointer:fine){
-    .team-grid{display:flex;gap:14px;position:relative}
-    /* raised tray the photo pills sit in — static while the row animates, so
-       its shadow rasterizes once instead of re-blurring every frame */
-    .team-grid::before{
-      content:"";position:absolute;inset:-18px -16px;z-index:-1;
-      border-radius:62px;background:#e8e9ed;
-      box-shadow:12px 12px 26px rgba(158,170,192,.48),-10px -10px 22px rgba(255,255,255,.92)
-    }
-    .team-grid .member{
-      /* box height, not picture scale, is what changed: collapsed photos are
-         width-bound (they stay exactly the same size), so shrinking the box
-         only removes empty blur around them — the photo never zooms */
-      flex:1 1 0;min-width:0;height:360px;padding:0;border:0;
-      background-color:#e7e7e9;background-repeat:no-repeat;
-      background-position:center;background-size:cover;
-      border-radius:44px;overflow:hidden;
-      /* photo fills the panel, so the inherited glass blur would be pure cost:
-         it re-blurs the changing region on every frame of the flex animation.
-         The drop shadow goes too — its re-raster per animation frame was the
-         entire measured cost of the exchange (53ms hitch + dropped frames;
-         shadow-free runs flatline at the idle 13.3ms), and the source shot
-         has no shadows anyway. */
-      backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none;
-      transition:flex .6s cubic-bezier(.3,.9,.25,1)
-    }
-    .team-grid .member:nth-child(1){background-image:url("assets/team/kashif-blur.jpg")}
-    .team-grid .member:nth-child(2){background-image:url("assets/team/zulqarnain-blur.jpg")}
-    .team-grid .member:nth-child(3){background-image:url("assets/team/aqib-blur.jpg")}
-    .team-grid .member:nth-child(4){background-image:url("assets/team/nouman-blur.jpg")}
-    .team-grid .member:nth-child(5){background-image:url("assets/team/mohsin-blur.jpg")}
-    .team-grid .member::before{content:none}            /* no rotating ring on photos */
-    .team-grid .member:hover{transform:none;box-shadow:none}   /* no card lift / press on panels */
-    .team-grid .member .avatar,.team-grid .member .av-zoom{
-      position:absolute;inset:0;width:100%;height:100%;margin:0;border-radius:0;
-      background:none;             /* letterbox areas must show the panel's blur fill */
-      box-shadow:none              /* full-panel photo: no coin, no card shadow */
-    }
-    /* whole photo, letterboxed over the blurred fill — no zoom transforms, so
-       nothing is cropped at rest or on hover */
-    .team-grid .member img.avatar,.team-grid .member .av-zoom img{
-      width:100%;height:100%;object-fit:contain;object-position:center
-    }
-    .team-grid .member::after{
-      content:"";position:absolute;inset:0;z-index:1;pointer-events:none;opacity:0;
-      transition:opacity .45s ease;
-      background:linear-gradient(to top,rgba(10,12,14,.85),rgba(10,12,14,.38) 38%,rgba(10,12,14,0) 66%)
-    }
-    .team-grid .member .m-info{
-      position:absolute;left:0;right:0;bottom:0;z-index:2;padding:24px 20px 28px;
-      text-align:center;opacity:0;transform:translateY(18px);
-      transition:opacity .45s ease,transform .55s cubic-bezier(.2,.8,.2,1)
-    }
-    .team-grid .member h4{font-size:16.5px;color:#fff;margin-bottom:6px;text-shadow:0 2px 14px rgba(0,0,0,.5)}
-    .team-grid .member .role{color:#ffb98a;margin-bottom:9px;text-shadow:0 1px 10px rgba(0,0,0,.45)}
-    .team-grid .member p{color:rgba(255,255,255,.92);font-size:12px;line-height:1.55;
-      margin:0 auto;max-width:320px;text-shadow:0 1px 10px rgba(0,0,0,.45)}
-    /* the exchange — equal specificity, later rule wins: first panel open at
-       rest, hovering the row closes it, hovering a panel opens that one */
-    .team-grid .member:first-child{flex:3.4 1 0}
-    .team-grid:hover .member{flex:1 1 0}
-    .team-grid .member:hover{flex:3.4 1 0}
-    .team-grid .member:first-child::after,.team-grid .member:first-child .m-info{opacity:1;transform:none}
-    .team-grid:hover .member::after,.team-grid:hover .member .m-info{opacity:0;transform:translateY(18px)}
-    .team-grid .member:hover::after,.team-grid .member:hover .m-info{opacity:1;transform:none}
-  }
-  @media (prefers-reduced-motion:reduce){
-    .team-grid .member,.team-grid .member img.avatar,.team-grid .member .av-zoom img,
-    .team-grid .member::after,.team-grid .member .m-info{transition-duration:.01ms}
-  }
-
-  /* ---------- Meet Our Team on a phone: hero-style stack ----------
-     Arranged like the hero: one centered column of full-width elements running
-     down the page, with airier gaps than the desktop grid's 18px so each card
-     reads as its own block (hero rhythm: ~26px between stacked elements).
-     The achievements row stops being a 2-up grid and joins the same single
-     column. Neumorphic skin untouched - this block only re-arranges. */
-  @media(max-width:640px){
+  /* ---------- team: swipeable strip on phones & tablets ----------
+     The desktop row becomes a horizontally scrollable filmstrip — edge cards
+     peek in from both sides and the strip snaps per card. Cards show full
+     colour here since nothing is hoverable on touch. */
+  @media(max-width:940px){
     .team .section-head .eyebrow{margin-bottom:18px}
     .team .section-head p{margin-top:20px}
-    .team-grid{gap:26px}
-    .team-grid .member{padding:30px 22px 28px}
-    .team-ach{grid-template-columns:1fr;gap:26px}
+    .team-grid{gap:16px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;padding:8px 24px 16px;margin:0 -24px;scrollbar-width:none}
+    .team-grid::-webkit-scrollbar{display:none}
+    .team-grid .member{flex:0 0 60vw;max-width:240px;scroll-snap-align:center}
+    .team-grid .member img{filter:none}
+    .team-grid .member:hover{transform:none;box-shadow:0 18px 40px -22px rgba(14,16,22,.35)}
+    .team-grid .member:hover img{filter:none}
   }
+
+
 </style>
 </head>
 <body>
@@ -1109,44 +1007,24 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
 
     <div class="team-grid">
       <article class="member rv">
-        <img class="avatar" src="assets/team/kashif.jpg" srcset="assets/team/kashif.jpg 240w, assets/team/kashif@2x.jpg 480w" sizes="(max-width:1023px) 128px, 420px" alt="Muhammad Kashif" width="128" height="128" loading="lazy">
-        <div class="m-info">
-        <h4>Muhammad Kashif</h4>
-        <span class="role">Founder &amp; CEO</span>
-        <p>Visionary entrepreneur helping businesses scale through digital marketing, branding, and business growth strategies.</p>
-        </div>
+        <img src="assets/team/kashif.jpg" srcset="assets/team/kashif.jpg 240w, assets/team/kashif@2x.jpg 480w" sizes="(max-width:940px) 60vw, 216px" alt="Muhammad Kashif" loading="lazy">
+        <div class="tm-label"><strong>Muhammad Kashif</strong><span>Founder &amp; CEO</span></div>
       </article>
       <article class="member rv">
-        <img class="avatar" src="assets/team/zulqarnain.jpg" srcset="assets/team/zulqarnain.jpg 240w, assets/team/zulqarnain@2x.jpg 480w" sizes="(max-width:1023px) 128px, 420px" alt="Zulqarnain Zameer" width="128" height="128" loading="lazy">
-        <div class="m-info">
-        <h4>Zulqarnain Zameer</h4>
-        <span class="role">Senior Designer</span>
-        <p>Leads branding, UI/UX design, visual storytelling, and creative campaigns that leave lasting impressions.</p>
-        </div>
+        <img src="assets/team/zulqarnain.jpg" srcset="assets/team/zulqarnain.jpg 240w, assets/team/zulqarnain@2x.jpg 480w" sizes="(max-width:940px) 60vw, 216px" alt="Zulqarnain Zameer" loading="lazy">
+        <div class="tm-label"><strong>Zulqarnain Zameer</strong><span>Senior Designer</span></div>
       </article>
       <article class="member rv">
-        <span class="avatar av-zoom"><img src="assets/team/aqib.jpg" srcset="assets/team/aqib.jpg 240w, assets/team/aqib@2x.jpg 480w" sizes="(max-width:1023px) 128px, 420px" alt="Aqib Ali" width="128" height="128" loading="lazy"></span>
-        <div class="m-info">
-        <h4>Aqib Ali</h4>
-        <span class="role">Project Leader</span>
-        <p>Expert in technical SEO, keyword research, content marketing, and organic business growth.</p>
-        </div>
+        <img src="assets/team/aqib.jpg" srcset="assets/team/aqib.jpg 240w, assets/team/aqib@2x.jpg 480w" sizes="(max-width:940px) 60vw, 216px" alt="Aqib Ali" loading="lazy">
+        <div class="tm-label"><strong>Aqib Ali</strong><span>Project Leader</span></div>
       </article>
       <article class="member rv">
-        <img class="avatar" src="assets/team/nouman.jpg" srcset="assets/team/nouman.jpg 240w, assets/team/nouman@2x.jpg 480w" sizes="(max-width:1023px) 128px, 420px" alt="Muhammad Nouman" width="128" height="128" loading="lazy">
-        <div class="m-info">
-        <h4>Muhammad Nouman</h4>
-        <span class="role">Social Media Manager</span>
-        <p>Creates engaging social media strategies, viral content, and audience-focused campaigns across all major platforms.</p>
-        </div>
+        <img src="assets/team/nouman.jpg" srcset="assets/team/nouman.jpg 240w, assets/team/nouman@2x.jpg 480w" sizes="(max-width:940px) 60vw, 216px" alt="Muhammad Nouman" loading="lazy">
+        <div class="tm-label"><strong>Muhammad Nouman</strong><span>Social Media Manager</span></div>
       </article>
       <article class="member rv">
-        <img class="avatar" src="assets/team/mohsin.jpg" srcset="assets/team/mohsin.jpg 240w, assets/team/mohsin@2x.jpg 480w" sizes="(max-width:1023px) 128px, 420px" alt="Muhammad Mohsin" width="128" height="128" loading="lazy">
-        <div class="m-info">
-        <h4>Muhammad Mohsin</h4>
-        <span class="role">Web Developer</span>
-        <p>Builds high-performance websites, landing pages, and conversion-focused digital experiences for modern brands.</p>
-        </div>
+        <img src="assets/team/mohsin.jpg" srcset="assets/team/mohsin.jpg 240w, assets/team/mohsin@2x.jpg 480w" sizes="(max-width:940px) 60vw, 216px" alt="Muhammad Mohsin" loading="lazy">
+        <div class="tm-label"><strong>Muhammad Mohsin</strong><span>Web Developer</span></div>
       </article>
     </div>
   </div>
