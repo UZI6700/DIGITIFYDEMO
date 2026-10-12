@@ -20,9 +20,9 @@
     --mut:#5f646c;                   /* secondary text */
     --bg:#ffffff;                    /* background */
     --bg2:#f6f6f7;
-    /* Translucent twins of --bg / --bg2. The WebGL particle field is painted on a
-       fixed canvas at z-index:-1, i.e. behind all in-flow content but above the root
-       background. Sections must be translucent or they would cover it completely. */
+    /* Translucent twins of --bg / --bg2. The soft aurora wash sits behind the page
+       at z-index:-2, i.e. behind all in-flow content but above the root background.
+       Sections must be translucent or they would cover it completely. */
     --bg-a:rgba(255,255,255,.62);
     --bg2-a:rgba(246,246,247,.60);
     --card:rgba(255,255,255,.55);   /* frosted glass sheet */
@@ -123,14 +123,6 @@
   .burger span{display:block;width:20px;height:2px;background:var(--ink);margin:4px 0;transition:.3s}
 
   /* ---------- hero ---------- */
-  /* ---- WebGL particle field ----
-     z-index:-1 puts it behind every in-flow section while staying above the root
-     background. It must NOT be z-index:0: a positioned element at 0 paints above
-     static block content, which would drop particles on top of the text.
-     pointer-events:none keeps it from ever eating a click. */
-  #fx-bg{position:fixed;inset:0;z-index:-1;width:100%;height:100%;display:block;pointer-events:none}
-  @media(prefers-reduced-motion:reduce){#fx-bg{display:none}}
-  @media print{#fx-bg{display:none}}
   /* ---- glassmorphism ambient wash ----
      Soft orange aurora, fixed behind everything (z-index:-2, under the particle
      field) so the frosted panels have color and light to refract. A white bloom
@@ -687,9 +679,6 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
 </style>
 </head>
 <body>
-<!-- Ambient WebGL particle field. Decorative only, so it is hidden from assistive
-     tech. Sits behind every section at z-index:-1 and never intercepts input. -->
-<canvas id="fx-bg" aria-hidden="true"></canvas>
 <!-- Glassmorphism ambient wash — a soft orange aurora fixed behind the page so
      the frosted panels have color and light to refract. Decorative only. -->
 <div class="aurora" aria-hidden="true"></div>
@@ -897,7 +886,6 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
       <button class="on" data-f="all">All Projects</button>
       <button data-f="branding">Branding</button>
       <button data-f="ecommerce">eCommerce</button>
-      <button data-f="seo">SEO</button>
       <button data-f="web">Web Design</button>
     </div>
 
@@ -921,11 +909,6 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
         <span class="proj-view">View</span>
         <img src="assets/proj-elumara.jpg" alt="Elumara Smart Food Warming Mat product page" loading="lazy">
         <div class="proj-cap"><h3>Elumara Smart Food Warming Mat</h3><p>eCommerce</p><p class="desc">An online store for a smart food warming mat. 11 heat levels and a 10-hour timer.</p></div>
-      </a>
-      <a class="proj rv" href="https://alivetravelsco.com/" target="_blank" rel="noopener noreferrer" data-cat="seo">
-        <span class="proj-view">View</span>
-        <img src="assets/proj-alive-seo.jpg" alt="Alive Travel search performance in Google Search Console" loading="lazy">
-        <div class="proj-cap"><h3>Alive Travel</h3><p>SEO</p><p class="desc">Search performance for alivetravelsco.com. 1.48K impressions and a 7.4% CTR in three months.</p></div>
       </a>
     </div>
   </div>
@@ -976,7 +959,7 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
       </article>
       <article class="tcard rv">
         <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-        <p>"Professional, responsive, and incredibly skilled. Digitify helped us launch our SaaS platform ahead of schedule with a flawless design."</p>
+        <p>"What I appreciate most about DIGITIFY is their clear communication and attention to detail. They listen to our needs, offer smart recommendations, and make the entire marketing process simple."</p>
         <div class="who"><img class="avatar" src="assets/testi/emily.jpg" alt="Nimra Ali" width="42" height="42" loading="lazy"><div><strong>Nimra Ali</strong><small>Local Business Owner</small></div></div>
       </article>
 
@@ -1229,7 +1212,11 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
       const t = document.querySelector(id);
       if (!t) return;
       e.preventDefault();
-      const top = t.getBoundingClientRect().top + window.scrollY - 8;
+      // land the section just under the fixed header: the header's own height
+      // (topbar + nav, which varies by breakpoint) plus a 16px breath, so the
+      // heading never hides behind the bar after the jump.
+      const head = document.querySelector('header');
+      const top = t.getBoundingClientRect().top + window.scrollY - ((head ? head.offsetHeight : 0) + 16);
       if (lenis) lenis.scrollTo(top);
       else window.scrollTo({ top, behavior: 'smooth' });
     });
@@ -1629,256 +1616,6 @@ display:block;width:56px;height:3px;background:var(--green);margin:20px auto 22p
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(() => ScrollTrigger.refresh());
   }
-
-  // ---- ambient WebGL particle field (background of the whole page) ----
-  // Motion justification: depth cue that parallaxes against scroll depth, so the
-  // page reads as moving forward as you travel down it. It supports the
-  // "Amplify Your ..." positioning instead of decorating for its own sake.
-  //
-  // Load and cost decisions, all deliberate:
-  //  - three.js is ~670KB. It is dynamically imported only AFTER first paint and
-  //    only when the canvas can actually be seen, so it never touches LCP.
-  //  - one Points draw call, no postprocessing, no bloom (a glow would also be the
-  //    single most "AI neon" tell on a dark site).
-  //  - particle count scales with viewport area but is hard-capped.
-  //  - DPR capped at 1.75; this is a soft background, it does not need retina text.
-  //  - render loop stops on tab blur and on reduced-motion, so a background tab
-  //    costs zero.
-  //  - scroll parallax is driven by a ScrollTrigger-scrubbed proxy object, the same
-  //    pattern used for [data-plx] above: no scroll listener, no layout reads per frame.
-  (function particleField() {
-    const canvas = document.getElementById('fx-bg');
-    if (!canvas) return;
-
-    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduced) { canvas.remove(); return; }
-
-    // No up-front getContext() probe here on purpose. A canvas can only ever hand out
-    // one context of a given type, so probing (and especially losing) it would leave
-    // three.js with a dead context and build() would throw. THREE.WebGLRenderer
-    // already throws when no context is available, and the .catch below turns that
-    // into a silent canvas removal, which is the correct fallback.
-
-    const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js';
-    const MAX_DPR = 1.75;
-    const MAX_PARTICLES = 2200;
-    const PER_100K_PX = 190;               // ~190 particles per 100k css px
-    const DEPTH = 60;                       // z-depth of the field
-
-    let renderer, scene, camera, points, raf = 0, running = false, ready = false;
-    const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
-    const scroll = { p: 0 };                 // scrubbed 0..1 by ScrollTrigger
-
-    function sizeOf() {
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
-      return { w, h, dpr };
-    }
-
-    function build(THREE) {
-      const { w, h, dpr } = sizeOf();
-
-      renderer = new THREE.WebGLRenderer({
-        canvas,
-        antialias: false,      // points do not benefit; saves fill rate
-        alpha: true,           // let the page background show through
-        powerPreference: 'low-power'
-      });
-      renderer.setPixelRatio(dpr);
-      renderer.setSize(w, h, false);
-
-      scene = new THREE.Scene();
-      camera = new THREE.PerspectiveCamera(58, w / h, 0.1, 400);
-      camera.position.z = 90;
-
-      const count = Math.min(MAX_PARTICLES, Math.round((w * h / 100000) * PER_100K_PX));
-      const pos = new Float32Array(count * 3);
-      const col = new Float32Array(count * 3);
-      const seed = new Float32Array(count);   // per-sparkle tilt + twinkle phase
-      // Mono-orange field. Two tones of the same hue rather than one flat colour:
-      // a single tone reads as a wash, while a spread from deep to bright gives
-      // the depth cue that keeps it looking like a field rather than a texture.
-      const gBrand = new THREE.Color('#f26a1b');
-      const gDeep = new THREE.Color('#c2410c');
-      const tmp = new THREE.Color();
-
-      for (let i = 0; i < count; i++) {
-        pos[i * 3 + 0] = (Math.random() - 0.5) * w * 1.6;
-        pos[i * 3 + 1] = (Math.random() - 0.5) * h * 1.6;
-        pos[i * 3 + 2] = -Math.random() * DEPTH;
-        seed[i] = Math.random();
-
-        // Weighted toward the brand green: it is the only hue on the page, so a
-        // few bright highlights plus a long tail of deep points keeps it in-palette.
-        if (Math.random() < 0.72) tmp.copy(gBrand);
-        else tmp.copy(gDeep);
-        // Deep points sit further back, so tie brightness to depth as well as to a
-        // random roll: far particles must not outshine near ones.
-        // z is written as -random()*DEPTH, i.e. 0 at the camera down to -DEPTH at the
-        // far plane, so the depth term is negated to get 0..1. Without the minus this
-        // runs 0..-1 and the far plane ends up the brightest part of the field.
-        const depth = -pos[i * 3 + 2] / DEPTH;              // 0 at camera, 1 at far
-        const dim = (0.85 - depth * 0.5) * (0.5 + Math.random() * 0.6);
-        col[i * 3 + 0] = tmp.r * dim;
-        col[i * 3 + 1] = tmp.g * dim;
-        col[i * 3 + 2] = tmp.b * dim;
-      }
-
-      const geo = new THREE.BufferGeometry();
-      geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-      geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
-      geo.setAttribute('aSeed', new THREE.BufferAttribute(seed, 1));
-
-      // Sparkles, not square sprites: THREE.Points' default material paints a hard
-      // quad per particle, so the field read as scattered boxes. This tiny shader
-      // draws each point as a four-point sparkle — an astroid-shaped star, sharp
-      // arms along the axes and concave between them — with a soft core, a random
-      // static tilt per particle, and a gentle size/brightness twinkle so the
-      // background glimmers. Still one draw call: no textures, no postprocessing.
-      points = new THREE.Points(geo, new THREE.ShaderMaterial({
-        uniforms: {
-          uTime: { value: 0 },
-          uSize: { value: Math.max(2.2, Math.min(3.4, w / 480)) },
-          uScale: { value: renderer.domElement.height * 0.5 }
-        },
-        vertexShader: `
-          attribute float aSeed;
-          attribute vec3 aColor;
-          uniform float uTime, uSize, uScale;
-          varying vec3 vColor;
-          varying float vSeed;
-          void main() {
-            vColor = aColor;
-            vSeed = aSeed;
-            vec4 mv = modelViewMatrix * vec4(position, 1.0);
-            float tw = 1.0 + 0.16 * sin(uTime * (0.6 + aSeed * 1.4) + aSeed * 43.0);
-            gl_PointSize = uSize * tw * (uScale / -mv.z);
-            gl_Position = projectionMatrix * mv;
-          }`,
-        fragmentShader: `
-          uniform float uTime;
-          varying vec3 vColor;
-          varying float vSeed;
-          void main() {
-            vec2 p = gl_PointCoord * 2.0 - 1.0;
-            float a = vSeed * 6.2831853;
-            float c = cos(a), s = sin(a);
-            p = mat2(c, -s, s, c) * p;
-            float d = sqrt(abs(p.x)) + sqrt(abs(p.y));   // 1.0 on the star's outline
-            float star = 1.0 - smoothstep(0.78, 1.0, d);
-            float core = exp(-dot(p, p) * 4.5);
-            float tw = 0.68 + 0.32 * sin(uTime * (0.6 + vSeed * 1.4) + vSeed * 43.0);
-            float alpha = max(star, core * 0.85) * tw;
-            if (alpha < 0.012) discard;
-            gl_FragColor = vec4(vColor + vColor * core * 0.6, alpha);
-          }`,
-        transparent: true,
-        depthWrite: false,
-        // Additive blending let overlapping specks sum toward white even though every
-        // particle is orange. Normal blending keeps the sum at the source colour, so
-        // the field can never accumulate into a white point.
-        blending: THREE.NormalBlending
-      }));
-      scene.add(points);
-
-      // Scroll parallax. ScrollTrigger already owns the scroll position here, so this
-      // reads a scrubbed 0..1 value instead of subscribing to scroll events.
-      if (window.gsap && window.ScrollTrigger) {
-        gsap.to(scroll, {
-          p: 1,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: document.documentElement,
-            start: 'top top',
-            end: 'bottom bottom',
-            scrub: 1
-          }
-        });
-      }
-    }
-
-    function resize() {
-      if (!ready) return;
-      const { w, h, dpr } = sizeOf();
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setPixelRatio(dpr);
-      renderer.setSize(w, h, false);
-      // point sprites scale against half the drawing-buffer height
-      points.material.uniforms.uScale.value = renderer.domElement.height * 0.5;
-    }
-
-    function frame() {
-      raf = requestAnimationFrame(frame);
-      // Ease the pointer toward its target inside the loop rather than in the event
-      // handler, so the handler itself stays cheap and the smoothing is frame-bound.
-      pointer.x += (pointer.tx - pointer.x) * 0.045;
-      pointer.y += (pointer.ty - pointer.y) * 0.045;
-
-      // Ambient drift on two axes so the field never looks frozen when idle.
-      points.rotation.y = pointer.x * 0.16 + Math.sin(performance.now() * 0.00007) * 0.05;
-      points.rotation.x = -pointer.y * 0.1 + Math.cos(performance.now() * 0.00005) * 0.035;
-
-      // Scroll drives vertical travel and a slight push-in. Clamped so the field never
-      // slides so far that it leaves the viewport.
-      const s = scroll.p;
-      points.position.y = (0.5 - s) * 26;
-      points.position.z = -s * 22;
-      camera.position.z = 90 + s * 10;
-
-      points.material.uniforms.uTime.value = performance.now() * 0.001;
-      renderer.render(scene, camera);
-    }
-
-    function start() {
-      if (running || !ready) return;
-      running = true;
-      raf = requestAnimationFrame(frame);
-    }
-
-    function stop() {
-      running = false;
-      cancelAnimationFrame(raf);
-    }
-
-    // Import only once the browser is idle and the hero has painted. If the import
-    // fails (offline, blocked CDN) nothing happens and the page is simply unchanged.
-    function load() {
-      if (ready) return;
-      import(THREE_URL)
-        .then(THREE => {
-          build(THREE);
-          ready = true;
-          resize();
-          start();
-        })
-        .catch(() => { canvas.remove(); });
-    }
-
-    // Pointer parallax, passive, only used to tilt the field.
-    addEventListener('pointermove', e => {
-      pointer.tx = (e.clientX / window.innerWidth - 0.5) * 2;
-      pointer.ty = (e.clientY / window.innerHeight - 0.5) * 2;
-    }, { passive: true });
-
-    let rt;
-    addEventListener('resize', () => {
-      clearTimeout(rt);
-      rt = setTimeout(resize, 180);
-    }, { passive: true });
-
-    // A hidden tab must cost nothing.
-    document.addEventListener('visibilitychange', () => {
-      document.hidden ? stop() : start();
-    });
-
-    if ('requestIdleCallback' in window) {
-      requestIdleCallback(load, { timeout: 2500 });
-    } else {
-      addEventListener('load', () => setTimeout(load, 400), { once: true });
-    }
-  })();
 
   // ---- team profile modal ----
   // Cards open a spotlight dialog: photo + bio + stats + expertise.
